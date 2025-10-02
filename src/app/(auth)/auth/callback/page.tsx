@@ -6,6 +6,10 @@ import { createClient } from "@/utils/supabase/client"
 import { createOrGetProfile } from "@/lib/profile"
 import { useRouter } from "next/navigation"
 
+
+export const dynamic = "force-dynamic"
+
+
 export default function OAuthCallbackPage() {
   const supabase = createClient()
   const router = useRouter()
