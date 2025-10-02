@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 
+export const dynamic = "force-dynamic"
+
 export default function PrivatePage() {
   const supabase = createClient()
   const router = useRouter()
