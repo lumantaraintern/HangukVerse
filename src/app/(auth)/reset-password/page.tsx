@@ -5,7 +5,7 @@ import { createClient } from "@/utils/supabase/client"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
-import { useRouter } from "next/navigation"
+import type { AuthError } from "@supabase/supabase-js"
 
 export default function ResetPasswordPage() {
   const supabase = createClient()
@@ -24,8 +24,9 @@ export default function ResetPasswordPage() {
       const { error } = await supabase.auth.updateUser({ password: newPassword })
       if (error) throw error
       toast.success("Password updated! You can now log in.")
-    } catch (err: any) {
-      toast.error(err.message || "Failed to reset password")
+    } catch (err) {
+      const error = err as AuthError
+      toast.error(error.message || "Failed to reset password")
     } finally {
       setLoading(false)
     }

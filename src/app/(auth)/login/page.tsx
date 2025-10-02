@@ -10,6 +10,7 @@ import { Eye, EyeOff } from "lucide-react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { createProfile, createOrGetProfile } from "@/lib/profile" // server actions
+import type { AuthError, AuthResponse } from "@supabase/supabase-js"
 
 export default function LoginPage() {
   const supabase = createClient()
@@ -37,6 +38,7 @@ export default function LoginPage() {
             session.user.user_metadata?.full_name || undefined
           )
         } catch (err) {
+
           console.error("Failed to create profile:", err)
         }
 
@@ -61,8 +63,9 @@ export default function LoginPage() {
       if (error) throw error
       router.push("/")
       toast.success("Logged in successfully!")
-    } catch (err: any) {
-      toast.error(err.message || "Failed to login")
+    } catch (err) {
+      const error = err as AuthError 
+      toast.error(error.message || "Failed to login")
     } finally {
       setLoading(false)
     }
@@ -90,9 +93,10 @@ export default function LoginPage() {
       toast.success("Account created!")
       toast.info("Please check your email to confirm your account.")
       setMode("login")
-    } catch (err: any) {
-      toast.error(err.message || "Failed to sign up")
-      console.log(err)
+    } catch (err) {
+      const error = err as AuthError
+      toast.error(error.message || "Failed to sign up")
+      console.log(error)
     } finally {
       setLoading(false)
     }
@@ -110,8 +114,10 @@ export default function LoginPage() {
       })
       if (error) throw error
       toast.success("Password reset email sent!")
-    } catch (err: any) {
-      toast.error(err.message || "Failed to send reset email")
+    } catch (err ) {
+      const error = err as AuthError
+
+      toast.error(error.message || "Failed to send reset email")
     }
   }
 
@@ -125,9 +131,10 @@ export default function LoginPage() {
       })
       if (error) throw error
       // Profile creation will be handled after redirect in useEffect
-    } catch (err: any) {
-      toast.error(err.message || "Failed to login with Google")
-      console.log(err)
+    } catch (err) {
+      const error = err as AuthError
+      toast.error(error.message || "Failed to login with Google")
+      console.log(error)
     } finally {
       setLoading(false)
     }

@@ -26,7 +26,7 @@ export default function OAuthCallbackPage() {
     }
 
     handleRedirect()
-  }, [router])
+  }, [router, supabase.auth])
 
   return <p>Logging you in...</p>
 }
