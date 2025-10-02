@@ -12,6 +12,8 @@ import Image from "next/image"
 import { createProfile, createOrGetProfile } from "@/lib/profile" // server actions
 import type { AuthError, AuthResponse } from "@supabase/supabase-js"
 
+export const dynamic = "force-dynamic"
+
 export default function LoginPage() {
   const supabase = createClient()
   const router = useRouter()
