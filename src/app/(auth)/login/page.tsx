@@ -1,4 +1,5 @@
 "use client"
+export const dynamic = "force-dynamic"
 
 import { useState, useEffect } from "react"
 import { createClient } from "@/utils/supabase/client"
@@ -12,7 +13,7 @@ import Image from "next/image"
 import { createProfile, createOrGetProfile } from "@/lib/profile" // server actions
 import type { AuthError, AuthResponse } from "@supabase/supabase-js"
 
-export const dynamic = "force-dynamic"
+
 
 export default function LoginPage() {
   const supabase = createClient()

@@ -1,5 +1,6 @@
 
 "use client"
+export const dynamic = "force-dynamic"
 
 import { useEffect } from "react"
 import { createClient } from "@/utils/supabase/client"
@@ -7,7 +8,7 @@ import { createOrGetProfile } from "@/lib/profile"
 import { useRouter } from "next/navigation"
 
 
-export const dynamic = "force-dynamic"
+
 
 
 export default function OAuthCallbackPage() {

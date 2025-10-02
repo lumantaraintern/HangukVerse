@@ -1,5 +1,7 @@
 "use client"
 
+export const dynamic = "force-dynamic";
+
 import { useState, useEffect } from "react"
 import { createClient } from "@/utils/supabase/client"
 import { Input } from "@/components/ui/input"
@@ -7,7 +9,6 @@ import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import type { AuthError } from "@supabase/supabase-js"
 
-export const dynamic = "force-dynamic";
 
 
 export default function ResetPasswordPage() {
