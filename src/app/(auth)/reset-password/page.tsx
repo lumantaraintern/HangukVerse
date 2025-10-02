@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import type { AuthError } from "@supabase/supabase-js"
 
+export const dynamic = "force-dynamic"
+
 export default function ResetPasswordPage() {
   const supabase = createClient()
   const [newPassword, setNewPassword] = useState("")
