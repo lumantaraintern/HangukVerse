@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import Image from 'next/image'
 import { useState } from 'react'
 
-function ThirdPage({ onLeft, onRight }: { onLeft: () => void; onRight: () => void }) {
+function ThirdPage({ onLeft, onRight, InLift, onBack }: { onLeft: () => void; onRight: () => void; InLift: () => void; onBack: () => void }) {
   const [openLift, setOpenLift] = useState(false)
   const [hideLift, setHideLift] = useState(false)
 
@@ -16,6 +16,9 @@ function ThirdPage({ onLeft, onRight }: { onLeft: () => void; onRight: () => voi
 
   const handleLeft = () => onLeft()
   const handleRight = () => onRight()
+  const handleInLift = () => InLift()
+  const handleBack = () => onBack()
+
 
   const handleLiftUp = () => console.log('Lift Up')
   const handleLiftDown = () => console.log('Lift Down')
@@ -78,12 +81,16 @@ function ThirdPage({ onLeft, onRight }: { onLeft: () => void; onRight: () => voi
             width: '32.01%',
             height: '63.28%',
           }}
+
         >
+
+
           <Image
             src="/liftopened.png"
             alt="Lift opened"
             fill
             className="object-contain object-center"
+
           />
         </div>
 
@@ -118,6 +125,12 @@ function ThirdPage({ onLeft, onRight }: { onLeft: () => void; onRight: () => voi
           >
             Call the Lift
           </Button>
+          <Button
+            className="bg-[#FF98FF] text-white hover:bg-[#AD6BFF] h-8 px-5 rounded-[30px] font-light text-[13px] opacity-90 tracking-[6px]"
+            onClick={handleBack}
+          >
+            Go Back
+          </Button>
         </div>
 
         {/* Arrows navigation */}
@@ -139,6 +152,33 @@ function ThirdPage({ onLeft, onRight }: { onLeft: () => void; onRight: () => voi
           className="absolute cursor-pointer z-40"
           style={{ top: '55.96%', right: '1.53%' }}
         />
+
+
+        {/* Open Lift Interior (behind doors) */}
+        {hideLift && (
+          <div
+            className="absolute z-[15] pointer-events-auto"
+            style={{
+              top: '36.72%',
+              left: '35.07%',
+              width: '32.01%',
+              height: '63.28%',
+            }}
+          >
+            <Image
+              src="/liftopened.png"
+              alt="Lift opened"
+              fill
+              className="object-contain object-center"
+            />
+            <Button
+              className="absolute z-20 bottom-10 left-1/2 -translate-x-1/2 bg-[#FF98FF] text-white hover:bg-[#AD6BFF] rounded-full px-6 py-2"
+              onClick={handleInLift}
+            >
+              Enter Inside the Lift
+            </Button>
+          </div>
+        )}
       </div>
     </section>
   )

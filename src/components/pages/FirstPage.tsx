@@ -9,17 +9,21 @@ import { AuthDialog } from "@/components/customcomponents/AuthDialog"
 import { createClient } from "@/utils/supabase/client"
 import { toast } from "sonner"
 import type { User } from "@supabase/supabase-js"
+import { useRouter } from "next/navigation"
+
 
 type FirstPageProps = { onNext: () => void }
 
-export default function FirstPage({ onNext }: FirstPageProps) {
+export default function FirstPage({ onNext }: FirstPageProps ) {
+  const router = useRouter();
+
   const supabase = createClient()
   const [openDoors, setOpenDoors] = useState(false)
   const [hideDoors, setHideDoors] = useState(false)
   const [showAuth, setShowAuth] = useState(false)
   const [isChecking, setIsChecking] = useState(false)
   const [userEmail, setUserEmail] = useState<string | null>(null)
-
+ 
   // Optional: show info toast if already logged in
   useEffect(() => {
     const checkSession = async () => {
@@ -28,7 +32,7 @@ export default function FirstPage({ onNext }: FirstPageProps) {
       if (user?.email) {
         setUserEmail(user.email)
         toast(`Already signed in as ${user.email}`)
-        setShowAuth(false)
+        //setShowAuth(false)
       }
     }
     checkSession()
@@ -51,17 +55,18 @@ export default function FirstPage({ onNext }: FirstPageProps) {
         const { data } = await supabase.auth.getUser()
         const isSignedIn = Boolean(data?.user?.email)
         if (isSignedIn) {
-          setShowAuth(false)
+          //setShowAuth(false)
           onNext()
         } else {
           toast.error("Please sign in first to continue")
-          setShowAuth(true)
+          router.push('/login');
+          //setShowAuth(true)
         }
       } finally {
         setIsChecking(false)
       }
     })
-  }, [animateDoorsThen, isChecking, onNext, supabase])
+  }, [animateDoorsThen, isChecking, onNext, supabase, router])
 
   const handleAuthSuccess = useCallback(async () => {
     const { data } = await supabase.auth.getUser()

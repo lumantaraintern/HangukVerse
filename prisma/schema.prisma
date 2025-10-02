@@ -1,0 +1,113 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Profile {
+  id        String   @id @db.Uuid // matches auth.users.id
+  name      String? // optional
+  username  String?  @unique // new unique field
+  avatarUrl String?  @map("avatar_url")
+  bio       String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  posts        Post[]
+  comments     Comment[]
+  postVotes    PostVote[]
+  commentVotes CommentVote[]
+  memberships  CommunityMembership[]
+}
+
+model Community {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String   @unique
+  title       String
+  description String?
+  createdBy   String?  @db.Uuid
+  createdAt   DateTime @default(now())
+
+  posts       Post[]
+  memberships CommunityMembership[]
+}
+
+model Post {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  communityId String   @db.Uuid
+  authorId    String   @db.Uuid
+  title       String
+  content     String?
+  url         String?
+  imageUrl    String?
+  postType    String
+  createdAt   DateTime @default(now())
+
+  author    Profile    @relation(fields: [authorId], references: [id])
+  community Community  @relation(fields: [communityId], references: [id])
+  comments  Comment[]
+  votes     PostVote[]
+}
+
+model Comment {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  postId    String   @db.Uuid
+  authorId  String   @db.Uuid
+  parentId  String?  @db.Uuid
+  content   String
+  createdAt DateTime @default(now())
+
+  author  Profile       @relation(fields: [authorId], references: [id])
+  post    Post          @relation(fields: [postId], references: [id])
+  parent  Comment?      @relation("CommentThread", fields: [parentId], references: [id])
+  replies Comment[]     @relation("CommentThread")
+  votes   CommentVote[]
+}
+
+model PostVote {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @db.Uuid
+  postId    String   @db.Uuid
+  value     Int
+  createdAt DateTime @default(now())
+
+  user Profile @relation(fields: [userId], references: [id])
+  post Post    @relation(fields: [postId], references: [id])
+
+  @@unique([userId, postId])
+}
+
+model CommentVote {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @db.Uuid
+  commentId String   @db.Uuid
+  value     Int
+  createdAt DateTime @default(now())
+
+  user    Profile @relation(fields: [userId], references: [id])
+  comment Comment @relation(fields: [commentId], references: [id])
+
+  @@unique([userId, commentId])
+}
+
+model CommunityMembership {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  communityId String   @db.Uuid
+  userId      String   @db.Uuid
+  role        String   @default("member")
+  joinedAt    DateTime @default(now())
+
+  user      Profile   @relation(fields: [userId], references: [id])
+  community Community @relation(fields: [communityId], references: [id])
+
+  @@unique([communityId, userId])
+}

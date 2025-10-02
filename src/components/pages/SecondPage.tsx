@@ -1,11 +1,16 @@
 import { Button } from '@/components/ui/button'
 import Image from 'next/image'
 
-function SecondPage({ onNext }: { onNext: () => void }) {
+function SecondPage({ onNext, onBack }: { onNext: () => void, onBack : () => void }) {
   const handleNext = () => {
     setTimeout(() => {
       onNext()
     }, 1000)
+  }
+  const handleBack = () => {
+    setTimeout(() => {
+      onBack()
+    }, 1000)  
   }
 
   return (
@@ -63,6 +68,12 @@ function SecondPage({ onNext }: { onNext: () => void }) {
             onClick={handleNext}
           >
             Once more
+          </Button>
+          <Button
+            className="bg-[#270157] text-white hover:bg-[#AD6BFF] w-40 h-9 rounded-[30px] font-light text-sm opacity-90"
+            onClick={handleBack}
+          >
+            Go Back
           </Button>
         </div>
       </div>

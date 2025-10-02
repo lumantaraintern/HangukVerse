@@ -8,7 +8,7 @@ import type { User, AuthError } from "@supabase/supabase-js"
 
 function NavigationBar() {
   const supabase = createClient()
-  const [showAuth, setShowAuth] = useState(false)
+  //const [showAuth, setShowAuth] = useState(false)
   const [userLabel, setUserLabel] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -51,7 +51,7 @@ function NavigationBar() {
       <div className="container mx-auto px-4 py-3 flex items-center justify-between gap-3">
         <div className="text-base sm:text-lg font-bold">MyApp</div>
         <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
-          <Button className="bg-[#630063] text-black hover:bg-[#DB31DB] h-9 sm:h-10 rounded-[30px] px-4 sm:px-6 text-xs sm:text-sm whitespace-nowrap">
+          <Button className="bg-[#630063] text-black hover:bg-[#DB31DB] h-9 sm:h-10 rounded-[30px] px-4 sm:px-6 text-xs sm:text-sm whitespace-nowrap" onClick={() => {window.location.href = '/community'}}>
             Community
           </Button>
           <Button className="bg-[#630063] text-black hover:bg-[#DB31DB] h-9 sm:h-10 rounded-[30px] px-4 sm:px-6 text-xs sm:text-sm whitespace-nowrap">
@@ -73,7 +73,7 @@ function NavigationBar() {
             </>
           ) : (
             <Button
-              onClick={() => setShowAuth(true)}
+              onClick={() => {/*setShowAuth(true)*/ window.location.href = '/login'}}
               className="bg-[#630063] text-black hover:bg-[#DB31DB] h-9 sm:h-10 rounded-[30px] px-4 sm:px-6 text-xs sm:text-sm whitespace-nowrap"
             >
               Login / Sign Up
@@ -82,14 +82,14 @@ function NavigationBar() {
         </div>
       </div>
 
-      {showAuth && (
+      {/* {showAuth && (
         <AuthDialog
           onSuccess={async () => {
             setShowAuth(false)
             await loadSession()
           }}
         />
-      )}
+      )} */}
     </nav>
   )
 }
