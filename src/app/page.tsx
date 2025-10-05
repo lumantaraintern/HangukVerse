@@ -36,7 +36,7 @@ export default function Home() {
 
   return (
     <>
-      {page === 1 && <FirstPage onNext={() => setPage(2)}  />}
+      {page === 1 && <FirstPage onNext={() => setPage(2)} />}
       {page === 2 && <SecondPage onNext={() => setPage(3)} onBack={() => setPage(1)} />}
       {page === 3 && (
         <ThirdPage
@@ -46,9 +46,9 @@ export default function Home() {
           onBack={() => setPage(2)}
         />
       )}
-      {page === 4 && <LeftRoom onLeft={() => setPage(3)}  />}
-      {page === 5 && <RightRoom onRight={() => setPage(3)}  />}
-      {page === 6 && <FourthInsideLift  onFirstFloor={() => setPage(7)} />}
+      {page === 4 && <LeftRoom onLeft={() => setPage(3)} />}
+      {page === 5 && <RightRoom onRight={() => setPage(3)} />}
+      {page === 6 && <FourthInsideLift onFirstFloor={() => setPage(7)} />}
       {page === 7 && <FifthPage onExit={() => setPage(8)} />}
       {page === 8 && <Floor1 onExit={() => setPage(1)} />}
       <Toaster />

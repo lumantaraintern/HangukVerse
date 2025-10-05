@@ -1,145 +1,81 @@
 "use client"
 
-
-import { useState, useEffect } from "react"
-import { createClient } from "@/utils/supabase/client"
+import { useState, useTransition, useEffect } from "react"
 import { toast } from "sonner"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { Eye, EyeOff } from "lucide-react"
+import { Eye, EyeOff, Smile } from "lucide-react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
-import { createProfile, createOrGetProfile } from "@/lib/profile" // server actions
-import type { AuthError, AuthResponse } from "@supabase/supabase-js"
+import { login, signup } from "./action" // import server actions
+import { createClient } from "@/utils/supabase/client"
 
-
+type AuthResponse = {
+  success: boolean
+  message?: string
+  firstLogin?: boolean
+}
 
 export default function LoginPage() {
-  const supabase = createClient()
-  const router = useRouter()
   const [mode, setMode] = useState<"login" | "signup">("login")
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [name, setName] = useState("")
-  const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [isPending, startTransition] = useTransition()
+  const router = useRouter()
+  const supabase = createClient()
 
-  // --- Detect existing session (handles Google redirect) ---
+  // ✅ Auto-redirect if already logged in
   useEffect(() => {
-    const checkSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession()
+    const checkUser = async () => {
+      const { data, error } = await supabase.auth.getUser()
+      if (data?.user) {
+        router.replace("/") // Redirect to home
+      }
+    }
+    checkUser()
+  }, [router, supabase])
 
-      if (session?.user) {
-        try {
-          // Create or get profile
-          await createOrGetProfile(
-            session.user.id,
-            session.user.email || undefined,
-            session.user.user_metadata?.full_name || undefined
-          )
-        } catch (err) {
 
-          console.error("Failed to create profile:", err)
-        }
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const formData = new FormData(e.currentTarget)
 
+    startTransition(async () => {
+      const res: AuthResponse =
+        mode === "login" ? await login(formData) : await signup(formData)
+
+      if (!res.success) {
+        toast.error(res.message || "Something went wrong.")
+        return
+      }
+
+      toast.success(
+        mode === "login"
+          ? "Logged in successfully!"
+          : "Account created! Please check your email to verify your account."
+      )
+
+      if (res.firstLogin) {
+        router.push("/account")
+      } else {
         router.push("/")
-        toast.success("Logged in successfully!")
       }
-    }
-
-    checkSession()
-  }, [router])
-
-  // --- Email/Password Login ---
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (password.length < 8) {
-      toast.error("Password must be at least 8 characters")
-      return
-    }
-    setLoading(true)
-    try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
-      if (error) throw error
-      router.push("/")
-      toast.success("Logged in successfully!")
-    } catch (err) {
-      const error = err as AuthError 
-      toast.error(error.message || "Failed to login")
-    } finally {
-      setLoading(false)
-    }
+    })
   }
 
-  // --- Email/Password Signup ---
-  const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (password.length < 8) {
-      toast.error("Password must be at least 8 characters")
-      return
-    }
-    setLoading(true)
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-      })
-      if (error) throw error
-
-      if (data.user) {
-        await createProfile(data.user.id, email, name) // server action inserts profile
-      }
-
-      toast.success("Account created!")
-      toast.info("Please check your email to confirm your account.")
-      setMode("login")
-    } catch (err) {
-      const error = err as AuthError
-      toast.error(error.message || "Failed to sign up")
-      console.log(error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  // --- Forgot Password ---
-  const handleForgotPassword = async () => {
-    if (!email) {
-      toast.error("Please enter your email first")
-      return
-    }
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      })
-      if (error) throw error
-      toast.success("Password reset email sent!")
-    } catch (err ) {
-      const error = err as AuthError
-
-      toast.error(error.message || "Failed to send reset email")
-    }
-  }
-
-  // --- Google OAuth Login ---
-  const handleGoogleLogin = async () => {
-    setLoading(true)
+  const handleGoogleSignIn = async () => {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
-        options: { redirectTo: `${window.location.origin}/auth/callback` },
+        options: {
+          redirectTo: `${window.location.origin}/`, // redirect after login
+        },
       })
       if (error) throw error
-      // Profile creation will be handled after redirect in useEffect
+      toast("Redirecting to Google...")
     } catch (err) {
-      const error = err as AuthError
-      toast.error(error.message || "Failed to login with Google")
-      console.log(error)
-    } finally {
-      setLoading(false)
+      const error = err as Error
+      toast.error(error.message || "Google sign-in failed")
     }
   }
 
@@ -157,37 +93,15 @@ export default function LoginPage() {
 
         {/* Form Container */}
         <div className="absolute top-1/3 left-8 z-10 w-full max-w-md p-8 bg-white/20 backdrop-blur-md shadow-lg rounded-2xl md:ml-16">
-          <form
-            onSubmit={mode === "login" ? handleLogin : handleSignup}
-            className="space-y-6"
-          >
+          <form onSubmit={handleSubmit} className="space-y-6">
             <h2 className="text-2xl font-bold text-center text-gray-800">
               {mode === "login" ? "Welcome Back" : "Create an Account"}
             </h2>
 
-            {/* Username (signup only) */}
-            {mode === "signup" && (
-              <div className="flex flex-col gap-1">
-                <Label htmlFor="name">Name</Label>
-                <Input
-                  id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                />
-              </div>
-            )}
-
             {/* Email */}
             <div className="flex flex-col gap-1">
               <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
+              <Input id="email" name="email" type="email" required />
             </div>
 
             {/* Password */}
@@ -196,9 +110,8 @@ export default function LoginPage() {
               <div className="relative">
                 <Input
                   id="password"
+                  name="password"
                   type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={8}
                   className="pr-10"
@@ -211,33 +124,28 @@ export default function LoginPage() {
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
-              {password.length > 0 && password.length < 8 && (
-                <p className="text-xs text-red-500">
-                  Password must be at least 8 characters
-                </p>
-              )}
+              <p className="text-xs text-gray-500">
+                Password must be at least 8 characters.
+              </p>
             </div>
 
-            {/* Forgot password */}
+            {/* Forgot Password Link */}
             {mode === "login" && (
-              <div className="text-right text-sm">
-                <button
-                  type="button"
-                  onClick={handleForgotPassword}
-                  className="text-blue-600 hover:underline"
-                >
-                  Forgot password?
-                </button>
-              </div>
+              <a
+                href="/auth/forgot-password"
+                className="text text-blue-600 hover:underline mb-3 self-end"
+              >
+                Forgot password?
+              </a>
             )}
 
             {/* Submit Button */}
             <Button
               type="submit"
-              disabled={loading}
+              disabled={isPending}
               className="w-full bg-blue-600 text-white hover:bg-blue-700"
             >
-              {loading
+              {isPending
                 ? mode === "login"
                   ? "Logging in..."
                   : "Signing up..."
@@ -246,19 +154,25 @@ export default function LoginPage() {
                   : "Sign up"}
             </Button>
 
-            {/* Google OAuth Button */}
+            {/* OR Separator */}
+            <div className="flex items-center gap-3 my-2">
+              <hr className="flex-1 border-gray-400" />
+              <span className="text-gray-500 text-sm">OR</span>
+              <hr className="flex-1 border-gray-400" />
+            </div>
+
+            {/* Google Sign-In */}
             <Button
               type="button"
-              onClick={handleGoogleLogin}
-              disabled={loading}
-              className="w-full bg-red-600 text-white hover:bg-red-700 flex items-center justify-center gap-2"
+              onClick={handleGoogleSignIn}
+              className="w-full bg-red-500 text-white hover:bg-red-600 flex items-center justify-center gap-2"
             >
-              <Image src="/google-icon.svg" alt="Google" width={18} height={18} />
-              {mode === "login" ? "Log in with Google" : "Sign up with Google"}
+              <Smile size={18} />
+              Continue with Google
             </Button>
 
-            {/* Toggle link */}
-            <p className="text-center text-sm">
+            {/* Toggle */}
+            <p className="text-center text-sm mt-3">
               {mode === "login" ? (
                 <>
                   Don’t have an account?{" "}

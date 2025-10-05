@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono,Kalnia } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -12,6 +12,14 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
+
+const  kalnia = Kalnia({
+  variable: "--font-kalnia",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  display: 'swap',
+});
+
 
 export const metadata: Metadata = {
   title: "HangukVerse",
@@ -26,7 +34,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${kalnia.variable} antialiased`}
       >
         {children}
         <Toaster />
